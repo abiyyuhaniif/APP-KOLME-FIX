@@ -38,7 +38,14 @@ def simpan_stok(stok_baru):
     df = pd.DataFrame([{"Stok": stok_baru}])
     df.to_csv(STOK_FILE, index=False)
 
-# SISTEM CEK STATUS LOGIN
+# Setup file login
+os.makedirs("data", exist_ok=True)
+LOGIN_STATUS_FILE = 'data/login_status.csv'
+
+ALLOWED_USERS = ["admin1@kolme.com", "admin2@kolme.com", "admin3@kolme.com", "admin4@kolme.com"]
+PASSWORD = "kol123"
+
+# Fungsi bantu
 def is_user_logged_in(username):
     if os.path.exists(LOGIN_STATUS_FILE):
         df = pd.read_csv(LOGIN_STATUS_FILE)
@@ -46,28 +53,37 @@ def is_user_logged_in(username):
     return False
 
 def set_user_login_status(username, status):
-    if status:  # login
+    if status:
         df = pd.read_csv(LOGIN_STATUS_FILE) if os.path.exists(LOGIN_STATUS_FILE) else pd.DataFrame(columns=["username"])
         if username not in df["username"].values:
             df.loc[len(df)] = [username]
             df.to_csv(LOGIN_STATUS_FILE, index=False)
-    else:  # logout
+    else:
         if os.path.exists(LOGIN_STATUS_FILE):
             df = pd.read_csv(LOGIN_STATUS_FILE)
             df = df[df["username"] != username]
             df.to_csv(LOGIN_STATUS_FILE, index=False)
 
-# SISTEM LOGIN
-ALLOWED_USERS = ["admin1@kolme.com", "admin2@kolme.com", "admin3@kolme.com", "admin4@kolme.com"]
-PASSWORD = "kol123"
-
+# Inisialisasi session
 if "login" not in st.session_state:
     st.session_state["login"] = False
 
+# Tampilan login
 if not st.session_state["login"]:
-    st.title(":material/person: Login Sistem KOL-ME")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.image("assets/LOGO_KECIL.png", width=160)
+    with col2:
+        st.title("Selamat Datang di ""KOL-ME")
+        
+
+    st.divider()
+
+    st.subheader(":material/lock: Login Admin")
+    st.info("Hanya admin resmi KOL-ME yang dapat masuk.")
+
+    username = st.text_input(":material/contact_mail: Email")
+    password = st.text_input(":material/key: Kata Sandi", type="password")
 
     if st.button(":material/login: Login"):
         if username in ALLOWED_USERS and password == PASSWORD:
@@ -80,7 +96,11 @@ if not st.session_state["login"]:
                 st.success("Login berhasil!")
                 st.rerun()
         else:
-            st.error("Username atau password salah.")
+            st.error("Username atau password salah. Coba lagi.")
+
+
+    st.divider()
+    st.caption(":material/forest: Sistem pertanian digital KOL-ME ")
             
 else:
     # Sidebar Navigasi
@@ -102,16 +122,16 @@ else:
         st.write("Silakan pilih menu di samping untuk mengelola data produksi, penjualan, stok, dan laporan keuangan.")
     elif halaman == "Produksi":
         st.markdown("---")
-        
+        # Konten produksi bisa ditambahkan di sini
     elif halaman == "Penjualan":
         st.markdown("---")
-        
+        # Konten penjualan bisa ditambahkan di sini
     elif halaman == "Isi Stok":
         st.markdown("---")
-        
+        # Konten isi stok bisa ditambahkan di sini
     elif halaman == "Laporan":
         st.markdown("---")
-        
+        # Konten laporan bisa ditambahkan di sini
         
     # HALAMAN HOME
     if halaman == 'Home':
@@ -152,7 +172,6 @@ else:
             }])
             df = pd.concat([df, new], ignore_index=True)
             simpan_data(df, PRODUKSI_FILE)
-            
 
             df_keuangan = load_data(KEUANGAN_FILE)
             transaksi_keuangan = pd.DataFrame([
